@@ -111,7 +111,3 @@ fabric.properties
 .idea/httpRequests
 
 # Custom
-.idea/*
-gradle
-gradlew*
-gradlew*
