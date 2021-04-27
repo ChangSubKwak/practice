@@ -97,4 +97,26 @@ public class ByteBufferTest {
 		assertThat(bb.limit()).isEqualTo(posBeforeFlip);
 		assertThat(bb.capacity()).isEqualTo(11);
 	}
+
+	@Test
+	@DisplayName("ByteBuffer flip 함수 테스트2")
+	public void flipTest2() {
+		// given
+		ByteBuffer bb = ByteBuffer.allocate(11);
+		System.out.println("1st State : " + bb);
+
+		// when #1
+		bb.put((byte) 1);
+		bb.put((byte) 2);
+		System.out.println("2nd State : " + bb);
+
+		// then #1
+		assertThat(bb.position()).isEqualTo(2);
+		assertThat(bb.limit()).isEqualTo(11);
+		assertThat(bb.capacity()).isEqualTo(11);
+
+		assertThat(bb.get(0)).isEqualTo((byte)1);
+		assertThat(bb.get(1)).isEqualTo((byte)2);
+		System.out.println("3rd State : " + bb);
+	}
 }
