@@ -5,7 +5,9 @@ import io.netty.util.IllegalReferenceCountException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -114,5 +116,85 @@ public class ByteBufTest {
 		assertThatThrownBy(() -> {                // then
 			buf1.release();
 		}).isInstanceOf(IllegalReferenceCountException.class).hasMessageContaining("refCnt: " + buf1.refCnt() + ", decrement: 1");
+	}
+
+	@Test
+	public void pooledHeapByteBufTest2() {
+		// given
+		ByteBuf buf = Unpooled.buffer();
+
+		// when #1
+		buf.writeShort(1);
+		buf.markReaderIndex();
+
+		// then #1
+		assertThat(buf.readShort()).isEqualTo((short) 1);
+		assertThat(buf.readerIndex()).isEqualTo(2);
+
+		buf.resetReaderIndex();                                // when #2
+		assertThat(buf.readerIndex()).isEqualTo(0);            // then #2
+
+		assertThat(buf.readShortLE()).isEqualTo((short) 0x0100);       // when, then #3
+	}
+
+	@Test
+	@DisplayName("자바의 ByteBuffer과 네티의 ByteBuf 사이의 상호 변환 테스트")
+	public void convertNettyBufferTest() {
+		// given
+		String testStr = "Keep up the good work";
+		ByteBuf nettyBuf = Unpooled.buffer(testStr.length());
+
+		nettyBuf.writeBytes(testStr.getBytes());                                       // when #1
+		assertThat(testStr).isEqualTo(nettyBuf.toString(Charset.defaultCharset()));    // then #1
+
+		ByteBuffer nioBuf = nettyBuf.nioBuffer();
+		assertThat(nioBuf).isNotNull();
+
+		System.out.println(Arrays.toString(nioBuf.array()));
+		System.out.println(nioBuf.arrayOffset());
+		System.out.println(nioBuf.remaining());
+	}
+
+	@Test
+	@DisplayName("자바의 ByteBuffer과 네티의 ByteBuf 사이의 Wrapping 함수를 통한 메모리 공유 확인 테스트")
+	public void convertNettyBufferTest2() {
+		// given
+		String testStr = "Keep up the good work";
+
+		// when #1
+		ByteBuffer nioBuf = ByteBuffer.wrap(testStr.getBytes());
+		ByteBuf nettyBuf = Unpooled.wrappedBuffer(nioBuf);
+
+		// then #1
+		assertThat(nioBuf.get(0)).isEqualTo(nettyBuf.getByte(0));
+
+		nioBuf.put(0, (byte) ('K' + 1));                                    // when #2
+		assertThat(nioBuf.get(0)).isEqualTo(nettyBuf.getByte(0));        // then #2
+	}
+
+	private ByteBuf a(ByteBuf input) {
+		return input;
+	}
+
+	private ByteBuf b(ByteBuf input) {
+		//ByteBuf output = null;					// ByteBuf를 별도로 선언하면 refCnt값이 증가함
+		try {
+			//output = input.alloc().directBuffer(input.readableBytes() + 1);
+			//return output;
+			return input;
+		} finally {
+			//input.release();
+		}
+	}
+
+	private void c(ByteBuf input) {
+		input.release();
+	}
+
+	@Test
+	public void releaseTest() {
+		ByteBuf buf = Unpooled.buffer(10);
+		c(b(a(buf)));
+		System.out.println(buf.refCnt());
 	}
 }
