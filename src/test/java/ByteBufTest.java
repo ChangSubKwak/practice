@@ -183,15 +183,18 @@ public class ByteBufTest {
 			//return output;
 			return input;
 		} finally {
-			//input.release();
+			input.release();
 		}
 	}
 
 	private void c(ByteBuf input) {
-		input.release();
+		assertThatThrownBy(() -> {
+			input.release();
+		}).isInstanceOf(IllegalReferenceCountException.class);
 	}
 
 	@Test
+	@DisplayName("ByteBuf를 언제 릴리즈 해야 하는지 테스트(맨 마지막에 해야함)")
 	public void releaseTest() {
 		ByteBuf buf = Unpooled.buffer(10);
 		c(b(a(buf)));
