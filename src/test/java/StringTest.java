@@ -8,22 +8,22 @@ public class StringTest {
 	@Test
 	public void split1() {
 		String input = "1,2";							// given
-		String[] s = input.split(",");				// when
+		String[] s = input.split(",");			// when
 		assertThat(s).containsExactly("1","2");			// then
 	}
 
 	@Test
 	public void split2() {
 		String input = "1";							// given
-		String[] s = input.split(",");			// when
+		String[] s = input.split(",");		// when
 		assertThat(s).contains("1");				// then
 	}
 
 	@Test
 	public void substring() {
-		String input = "(1,2)";										// given
+		String input = "(1,2)";								// given
 		String s = input.substring(1, input.length() - 1);	// when
-		assertThat(s).isEqualTo("1,2");								// then
+		assertThat(s).isEqualTo("1,2");						// then
 	}
 
 	@Test
